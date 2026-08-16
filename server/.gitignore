@@ -1,0 +1,4 @@
+node_modules/
+.env
+.env.bak
+data/orders.log
