@@ -1,4 +1,10 @@
 import "dotenv/config";
+// Express 4 doesn't forward a rejected promise from an async route handler
+// to next(err) on its own — without this, any DB hiccup or thrown error
+// inside an async handler becomes an unhandled rejection that crashes the
+// whole process on Node 18+. This patches Express so those rejections
+// reach the error-handling middleware at the bottom of this file instead.
+import "express-async-errors";
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";

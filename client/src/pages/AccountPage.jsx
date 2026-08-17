@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Box, Heading, Text, VStack, HStack, Button, Badge, Divider, Center, Spinner } from "@chakra-ui/react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -9,10 +9,19 @@ export default function AccountPage() {
   useDocumentMeta("Мои заказы — NSP Club", "История ваших заявок на заказ NSP Club.");
   const { user, loading, logout } = useAuth();
   const [orders, setOrders] = useState(null);
+  const [error, setError] = useState(false);
+
+  const loadOrders = useCallback(() => {
+    if (!user) return;
+    setError(false);
+    fetchMyOrders()
+      .then(setOrders)
+      .catch(() => setError(true));
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchMyOrders().then(setOrders);
-  }, [user]);
+    loadOrders();
+  }, [loadOrders]);
 
   if (loading) {
     return (
@@ -35,7 +44,12 @@ export default function AccountPage() {
       </Text>
 
       <Heading size="md" mb={4}>Мои заявки</Heading>
-      {!orders ? (
+      {error ? (
+        <VStack py={10} spacing={3}>
+          <Text color="textMuted">Не удалось загрузить заявки.</Text>
+          <Button size="sm" onClick={loadOrders}>Повторить</Button>
+        </VStack>
+      ) : !orders ? (
         <Center py={10}>
           <Spinner />
         </Center>

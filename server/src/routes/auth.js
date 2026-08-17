@@ -21,6 +21,13 @@ function publicUser(user) {
   return { id: user.id, name: user.name, phone: user.phone };
 }
 
+// Used to keep /login's response time the same whether the phone is
+// registered or not — comparing against this dummy hash when no user is
+// found costs roughly the same as a real bcrypt.compare, closing the
+// timing side-channel that would otherwise let an attacker enumerate
+// registered phone numbers.
+const DUMMY_HASH = bcrypt.hashSync("no-such-user-timing-guard", 10);
+
 router.post("/register", authLimiter, async (req, res) => {
   const { name, phone, password } = req.body || {};
   if (
@@ -44,7 +51,18 @@ router.post("/register", authLimiter, async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ name: name.trim().slice(0, 120), phone: safePhone, passwordHash });
+  let user;
+  try {
+    user = await User.create({ name: name.trim().slice(0, 120), phone: safePhone, passwordHash });
+  } catch (error) {
+    // Two concurrent registrations for the same phone can both pass the
+    // findOne check above before either commits — the unique constraint
+    // on phone catches it here instead.
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({ error: "Аккаунт с этим телефоном уже существует" });
+    }
+    throw error;
+  }
   const token = signUserToken(user);
   res.status(201).json({ token, user: publicUser(user) });
 });
@@ -55,8 +73,8 @@ router.post("/login", authLimiter, async (req, res) => {
     return res.status(400).json({ error: "Укажите телефон и пароль" });
   }
   const user = await User.findOne({ where: { phone: phone.trim().slice(0, 30) } });
-  const ok = user && (await bcrypt.compare(password, user.passwordHash));
-  if (!ok) {
+  const ok = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
+  if (!user || !ok) {
     return res.status(401).json({ error: "Неверный телефон или пароль" });
   }
   const token = signUserToken(user);

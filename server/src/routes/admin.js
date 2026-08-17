@@ -1,5 +1,6 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
+import crypto from "node:crypto";
 import Order from "../db/models/Order.js";
 import Product from "../db/models/Product.js";
 import requireAdminAuth from "../middleware/adminAuth.js";
@@ -8,6 +9,16 @@ import { escapeHtml, csvEscape } from "../utils/html.js";
 
 const router = express.Router();
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "https://nsp-club.ru";
+
+// Plain === leaks how many leading characters matched via response timing.
+// Hashing both sides to a fixed length first lets us use
+// crypto.timingSafeEqual (which requires equal-length buffers) regardless
+// of the actual credential lengths.
+function timingSafeStringEqual(a, b) {
+  const bufA = crypto.createHash("sha256").update(String(a)).digest();
+  const bufB = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 // Basic Auth used to be the whole gate; now a real JWT login guards /admin,
 // so this just slows down password brute-forcing against /admin/login.
@@ -78,9 +89,10 @@ router.get("/login", adminLimiter, (req, res) => {
 router.post("/login", adminLimiter, (req, res) => {
   const { username, password } = req.body || {};
   const ok =
-    username === process.env.ADMIN_USERNAME &&
+    typeof username === "string" &&
     typeof password === "string" &&
-    password === process.env.ADMIN_PASSWORD;
+    timingSafeStringEqual(username, process.env.ADMIN_USERNAME || "") &&
+    timingSafeStringEqual(password, process.env.ADMIN_PASSWORD || "");
   if (!ok) {
     return res.redirect("/admin/login?error=1");
   }

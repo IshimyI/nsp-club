@@ -42,7 +42,16 @@ router.post("/", orderLimiter, optionalUserAuth, async (req, res) => {
   const safeName = name.trim().slice(0, 120);
   const safePhone = phone.trim().slice(0, 30);
   const safeComment = typeof comment === "string" ? comment.trim().slice(0, COMMENT_MAX) : "";
-  const safeItems = items.slice(0, MAX_ITEMS);
+  // Clamp qty to a positive integer (1-999) — items.slice() alone left
+  // whatever the client sent (including negative/NaN values) flowing
+  // straight into the stored order and the Telegram notification.
+  const safeItems = items.slice(0, MAX_ITEMS).map((item) => {
+    const qty = Math.floor(Number(item?.qty));
+    return {
+      ...item,
+      qty: Number.isFinite(qty) && qty > 0 ? Math.min(qty, 999) : 1,
+    };
+  });
 
   await Order.create({
     userId: req.userId || null,

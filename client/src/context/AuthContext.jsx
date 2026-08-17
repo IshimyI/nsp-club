@@ -19,6 +19,12 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const onAuthExpired = () => setUser(null);
+    window.addEventListener("nsp-auth-expired", onAuthExpired);
+    return () => window.removeEventListener("nsp-auth-expired", onAuthExpired);
+  }, []);
+
   const login = async (phone, password) => {
     const data = await apiLogin({ phone, password });
     setToken(data.token);
