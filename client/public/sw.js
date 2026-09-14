@@ -1,6 +1,5 @@
-// Deliberately minimal: this does NOT cache the API or product data (which
-// changes weekly) — it only shows a friendly offline page instead of the
-// browser's default error when a navigation fails with no network.
+
+
 const OFFLINE_URL = "/offline.html";
 const CACHE_NAME = "nsp-club-offline-v1";
 

@@ -44,10 +44,6 @@ function convertDocxToText(docxPath) {
   });
 }
 
-// The source docx files mix Latin homoglyphs into Cyrillic words in a
-// handful of names (OCR/copy-paste artifact) — e.g. "Чеснoк" has a Latin
-// "o". Fixed by exact substring swap since these are one-off typos, not a
-// systematic encoding issue.
 const NAME_TYPO_FIXES = {
   Глюкозaмин: "Глюкозамин",
   Гoту: "Готу",
@@ -71,9 +67,7 @@ function fixNameTypos(name) {
 
 function parseProductText(raw, folderName) {
   const lines = raw.replace(/\r/g, "").split("\n");
-  // First non-empty line is the Russian name; the following line often holds
-  // the English name glued to "Артикул: N" with no separator, e.g.
-  // "HP FighterАртикул: 917"
+
   let i = 0;
   while (i < lines.length && !lines[i].trim()) i++;
   const name = fixNameTypos(lines[i]?.trim() || folderName);
@@ -87,7 +81,6 @@ function parseProductText(raw, folderName) {
 
   const rest = lines.slice(i).join("\n");
 
-  // Split remaining text on section headers that sit alone on their own line.
   const headerPattern = new RegExp(
     `^(${SECTION_HEADERS.join("|")})$`,
     "m"
@@ -115,9 +108,7 @@ function parseProductText(raw, folderName) {
 }
 
 function isCertificateFilename(filename) {
-  // SGR/certificate scans are consistently named "д<article>", sometimes
-  // with a "_2"-style suffix for a second scanned page (e.g. "д1825.jpg",
-  // "д1602_1.jpg") — distinct from real product photos.
+
   const stem = path.basename(filename, path.extname(filename));
   return /^д\d+/i.test(stem);
 }
@@ -138,10 +129,6 @@ function getImageRatio(filePath) {
   }
 }
 
-// The two certificate page templates (front "Свидетельство" page and
-// "Приложение" continuation page) are scanned/exported at consistent
-// aspect ratios across the whole dataset, regardless of filename —
-// narrow bands around 1.19 and 1.38 catch both, even hash-named copies.
 function isCertificateRatio(ratio) {
   if (ratio == null) return false;
   return (ratio > 1.16 && ratio < 1.21) || (ratio > 1.33 && ratio < 1.41);
@@ -152,11 +139,6 @@ function isCertificate(folderPath, filename) {
   return isCertificateRatio(getImageRatio(path.join(folderPath, filename)));
 }
 
-// Flat print-ready label artwork (the unwrapped bottle label as a design
-// file, not a photo of the product) is consistently a very wide/short crop
-// in this dataset — real product photography (bottles, pouches, lifestyle
-// shots) is never this elongated, even landscape lifestyle shots stay
-// above this. Confirmed by eye against ~15 samples across the ratio range.
 const LABEL_RATIO_MAX = 0.55;
 
 function isFlatLabel(folderPath, filename) {
@@ -164,12 +146,6 @@ function isFlatLabel(folderPath, filename) {
   return ratio != null && ratio < LABEL_RATIO_MAX;
 }
 
-// Real product photos always come first (so the card thumbnail and primary
-// gallery image are never a certificate or a flat label) — labels and
-// certificate scans are still appended after rather than dropped, since
-// they're legitimate supplementary images (a label lists the full official
-// composition; a registration certificate is a trust signal), just not
-// what should represent the product at a glance.
 function pickImages(folderPath) {
   const files = fs
     .readdirSync(folderPath)

@@ -45,9 +45,6 @@ async function main() {
     }
     processed++;
 
-    // Also maintain a .webp sibling for jpg/png originals — the server
-    // transparently serves this to browsers that send Accept: image/webp,
-    // so no client-side or products.json change is needed.
     if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
       const webpPath = filePath.replace(/\.(jpe?g|png)$/i, ".webp");
       await sharp(fs.readFileSync(filePath)).webp({ quality: JPEG_QUALITY }).toFile(webpPath);

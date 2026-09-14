@@ -10,18 +10,12 @@ import { escapeHtml, csvEscape } from "../utils/html.js";
 const router = express.Router();
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "https://nsp-club.ru";
 
-// Plain === leaks how many leading characters matched via response timing.
-// Hashing both sides to a fixed length first lets us use
-// crypto.timingSafeEqual (which requires equal-length buffers) regardless
-// of the actual credential lengths.
 function timingSafeStringEqual(a, b) {
   const bufA = crypto.createHash("sha256").update(String(a)).digest();
   const bufB = crypto.createHash("sha256").update(String(b)).digest();
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-// Basic Auth used to be the whole gate; now a real JWT login guards /admin,
-// so this just slows down password brute-forcing against /admin/login.
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 60,

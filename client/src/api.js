@@ -10,10 +10,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// There's no refresh-token flow here — a 401 on an authenticated call
-// (not just the initial /auth/me on mount) means the token is gone/expired.
-// Clear it and let AuthContext know so the whole app drops back to a
-// logged-out state instead of every call site silently failing forever.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -46,7 +42,6 @@ export const fetchProduct = (slug) => {
   return promise;
 };
 
-// Fire-and-forget: warms the cache so navigating to the product is instant.
 export const prefetchProduct = (slug) => {
   if (!productCache.has(slug)) fetchProduct(slug);
 };

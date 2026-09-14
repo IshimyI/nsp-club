@@ -28,15 +28,12 @@ function slugify(input) {
 }
 
 // Official NSP "programs" pages list which individual products belong to
-// each health program — matched here to our set names so we can show the
-// real composition instead of a generic placeholder. Matched by
-// stemmed-word overlap; a few names diverge enough from the program title
-// to need a manual pointer (or genuinely have no official equivalent).
+
 const MANUAL_PROGRAM_OVERRIDES = {
-  64213: "vascular-care", // "Защита сосудов"
-  64214: "antiparasitic", // "Противопаразитарная"
-  64216: "detoxification", // "Программа детоксикации"
-  64208: null, // "Стоп простуда" — no matching official program
+  64213: "vascular-care",
+  64214: "antiparasitic",
+  64216: "detoxification",
+  64208: null,
 };
 
 function wordSet(s) {

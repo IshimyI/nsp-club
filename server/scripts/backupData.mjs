@@ -9,8 +9,6 @@ const DATA_DIR = path.resolve(__dirname, "../data");
 const BACKUP_ROOT = path.resolve(__dirname, "../backups");
 const KEEP_DAYS = 14;
 
-// Scrape-pipeline artifacts (still file-based — see scripts/mergeProducts.mjs
-// etc.), kept alongside the DB dump for easy inspection without a DB client.
 const FILES_TO_BACKUP = ["products.json", "products-local.json", "products-sets.json", "products-official-extra.json", "prices.json"];
 
 function backupDatabase(destDir) {

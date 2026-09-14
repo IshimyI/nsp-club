@@ -20,8 +20,6 @@ const orderLimiter = rateLimit({
 router.post("/", orderLimiter, optionalUserAuth, async (req, res) => {
   const { name, phone, comment, items, website } = req.body;
 
-  // Honeypot: real users never fill this hidden field — bots that
-  // auto-fill every input do. Pretend success so bots don't retry.
   if (website) {
     return res.status(200).json({ status: "sent" });
   }

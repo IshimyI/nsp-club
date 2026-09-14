@@ -8,9 +8,6 @@ import Product from "../src/db/models/Product.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCTS_FILE = path.resolve(__dirname, "../data/products.json");
 
-// Runs at the end of the weekly refresh pipeline: the scrape/build scripts
-// still produce products.json exactly as before, this just makes Postgres
-// match it — upserting current rows and deleting slugs no longer present.
 async function main() {
   const products = JSON.parse(fs.readFileSync(PRODUCTS_FILE, "utf8"));
   await sequelize.authenticate();

@@ -163,9 +163,9 @@ export default function OrderPage() {
 
       <Heading size="md" mb={4}>Оформление</Heading>
       <VStack as="form" onSubmit={onSubmit} align="stretch" spacing={4} noValidate>
-        {/* Honeypot: hidden from real users, bots that auto-fill every field
-            trip it. Keep the off-screen positioning — display:none fields
-            get skipped by some bots and defeat the point. */}
+        {
+
+}
         <Box position="absolute" left="-9999px" aria-hidden="true">
           <Input
             name="website"

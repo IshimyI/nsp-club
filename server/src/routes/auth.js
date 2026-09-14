@@ -21,11 +21,6 @@ function publicUser(user) {
   return { id: user.id, name: user.name, phone: user.phone };
 }
 
-// Used to keep /login's response time the same whether the phone is
-// registered or not — comparing against this dummy hash when no user is
-// found costs roughly the same as a real bcrypt.compare, closing the
-// timing side-channel that would otherwise let an attacker enumerate
-// registered phone numbers.
 const DUMMY_HASH = bcrypt.hashSync("no-such-user-timing-guard", 10);
 
 router.post("/register", authLimiter, async (req, res) => {
@@ -55,9 +50,7 @@ router.post("/register", authLimiter, async (req, res) => {
   try {
     user = await User.create({ name: name.trim().slice(0, 120), phone: safePhone, passwordHash });
   } catch (error) {
-    // Two concurrent registrations for the same phone can both pass the
-    // findOne check above before either commits — the unique constraint
-    // on phone catches it here instead.
+
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(409).json({ error: "Аккаунт с этим телефоном уже существует" });
     }

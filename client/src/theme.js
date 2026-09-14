@@ -11,8 +11,7 @@ const theme = extendTheme({
     body: `'Segoe UI', system-ui, sans-serif`,
   },
   colors: {
-    // Muted sage green rather than the earlier saturated grass green — same
-    // hue family, lower saturation, for a softer, more understated feel.
+
     nsp: {
       50: "#eef6f0",
       100: "#d8e9dc",
@@ -25,7 +24,7 @@ const theme = extendTheme({
       800: "#24422b",
       900: "#172c1c",
     },
-    // Muted brass/bronze instead of a bright gold — quieter accent to match.
+
     gold: {
       50: "#f7f4ed",
       100: "#eae1d1",
@@ -46,8 +45,7 @@ const theme = extendTheme({
       borderColor: { default: "gray.200", _dark: "gray.600" },
       textPrimary: { default: "gray.800", _dark: "whiteAlpha.900" },
       textMuted: { default: "gray.600", _dark: "gray.400" },
-      // Chakra's stock gray.500 falls just under WCAG AA (4.5:1) for small
-      // text on both white and gray.900 — bumped a step darker/lighter.
+
       textFaint: { default: "#65707d", _dark: "#808a9b" },
     },
   },
@@ -65,10 +63,7 @@ const theme = extendTheme({
         colorScheme: "nsp",
       },
       variants: {
-        // Chakra's stock solid/link/outline variants use shade 500 for the
-        // nsp colorScheme, which is 4.05:1 / 3.86:1 against white — just
-        // under WCAG AA (4.5:1). Bumped to 600 in light mode only; dark
-        // mode already uses a light shade with dark text (fine as-is).
+
         solid: (props) =>
           props.colorScheme === "nsp"
             ? {

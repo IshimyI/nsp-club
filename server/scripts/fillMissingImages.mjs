@@ -60,8 +60,7 @@ async function main() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());
       fs.writeFileSync(path.join(IMAGES_DIR, outName), buf);
-      // Prepend so the real photo leads the gallery; any certificate scans
-      // already present stay as supplementary images after it.
+
       product.images = [outName, ...product.images];
       product.photoCount = 1;
       filled++;

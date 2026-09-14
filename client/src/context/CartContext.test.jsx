@@ -57,8 +57,8 @@ describe("CartContext", () => {
 
   it("computes totalUsd from retail price × qty", () => {
     renderCart();
-    fireEvent.click(screen.getByText("add-a")); // 10 * 1
-    fireEvent.click(screen.getByText("add-b")); // 20 * 2
+    fireEvent.click(screen.getByText("add-a"));
+    fireEvent.click(screen.getByText("add-b"));
     expect(screen.getByTestId("total").textContent).toBe("50");
   });
 

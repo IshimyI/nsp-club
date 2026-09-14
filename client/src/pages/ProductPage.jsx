@@ -166,7 +166,7 @@ export default function ProductPage() {
       try {
         await navigator.share({ title: product.name, url });
       } catch {
-        // user cancelled — no-op
+
       }
       return;
     }

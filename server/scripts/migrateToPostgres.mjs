@@ -11,10 +11,6 @@ import Order from "../src/db/models/Order.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, "../data");
 
-// One-time move from the old file-based storage (products.json, orders.log,
-// orders-processed.json) to Postgres. Safe to re-run: orders are upserted
-// by the same synthetic id the admin panel already used for legacy rows
-// (see the old orderId() helper), so re-running never duplicates them.
 function orderId(o) {
   if (o.id) return o.id;
   return crypto.createHash("sha256").update(`${o.at}|${o.phone}|${o.name}`).digest("hex").slice(0, 16);
@@ -38,7 +34,7 @@ function readJsonl(file) {
 
 async function main() {
   await sequelize.authenticate();
-  await sequelize.sync(); // creates products/users/orders tables if missing
+  await sequelize.sync();
 
   const productsFile = path.join(DATA_DIR, "products.json");
   if (fs.existsSync(productsFile)) {
@@ -67,7 +63,7 @@ async function main() {
   try {
     processedIds = new Set(JSON.parse(fs.readFileSync(path.join(DATA_DIR, "orders-processed.json"), "utf8")));
   } catch {
-    // no processed-state file yet — fine, nothing was marked processed
+
   }
 
   let migratedOrders = 0;

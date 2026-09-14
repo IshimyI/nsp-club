@@ -1,9 +1,5 @@
 import "dotenv/config";
-// Express 4 doesn't forward a rejected promise from an async route handler
-// to next(err) on its own — without this, any DB hiccup or thrown error
-// inside an async handler becomes an unhandled rejection that crashes the
-// whole process on Node 18+. This patches Express so those rejections
-// reach the error-handling middleware at the bottom of this file instead.
+
 import "express-async-errors";
 import cors from "cors";
 import express from "express";
@@ -22,9 +18,6 @@ import { escapeHtml } from "./utils/html.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, "../data");
 
-// Official CBR (Russian central bank) USD/RUB rate, refetched at most once
-// a day and cached in memory — used to show a real (not guessed) ruble
-// estimate next to the dollar prices on the site.
 let rateCache = { rub: null, date: null, fetchedAt: 0 };
 const RATE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -35,8 +28,7 @@ async function getUsdRubRate() {
   try {
     const res = await fetch("https://www.cbr.ru/scripts/XML_daily.asp");
     const buf = Buffer.from(await res.arrayBuffer());
-    // The feed is windows-1251; the bits we need (digits, comma, date) are
-    // all ASCII-safe, so latin1 decoding is enough without a full charset lib.
+
     const xml = buf.toString("latin1");
     const dateMatch = xml.match(/Date="([\d.]+)"/);
     const usdMatch = xml.match(/CharCode>USD<\/CharCode>[\s\S]*?<Value>([\d,]+)<\/Value>/);
@@ -61,11 +53,6 @@ const ALLOWED_ORIGINS = [
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "https://nsp-club.ru";
 
-// Regular users never reach this — nginx only proxies /product/:slug here
-// for requests whose User-Agent matches a known social-media
-// link-unfurling bot (see /etc/nginx/conf.d/social-bots.conf on the VPS).
-// Those bots don't execute JS, so the SPA's dynamic <title>/meta never
-// reaches them — this server-rendered response stands in, just for this path.
 function renderProductBotHtml(res, product) {
   const description = (
     product.highlights?.[0] || `${product.name} — купить с доставкой. Артикул ${product.article}.`
@@ -110,10 +97,6 @@ app.use(cookieParser());
 
 const IMAGES_DIR = path.join(DATA_DIR, "images");
 
-// Transparent WebP negotiation: if the browser accepts image/webp and a
-// pre-generated .webp sibling exists for the requested jpg/jpeg/png, serve
-// that instead. Keeps every existing image URL in the product data working
-// unchanged while still shipping the smaller format where possible.
 app.use("/images", (req, res, next) => {
   if (!/\.(jpe?g|png)$/i.test(req.path) || !(req.headers.accept || "").includes("image/webp")) {
     return next();
@@ -129,9 +112,7 @@ app.use("/images", express.static(IMAGES_DIR));
 
 app.use("/api/v1/products", productsRouter);
 app.use("/api/v1/auth", authRouter);
-// Mounted at both the singular path (POST /api/v1/order — what the client
-// has always posted to) and the plural one (GET /api/v1/orders/mine, the
-// new order-history endpoint) since they're the same router.
+
 app.use("/api/v1/order", ordersRouter);
 app.use("/api/v1/orders", ordersRouter);
 

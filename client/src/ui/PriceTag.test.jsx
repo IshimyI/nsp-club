@@ -38,8 +38,8 @@ describe("PriceTag", () => {
   it("shows a struck-through retail ruble price next to the discounted one", () => {
     useRate.mockReturnValue(90);
     renderTag({ priceRetailUsd: 10, priceDiscountUsd: 8 });
-    expect(screen.getByText("720 ₽")).toBeInTheDocument(); // discounted: 8 * 90
-    expect(screen.getByText("900 ₽")).toBeInTheDocument(); // struck-through retail: 10 * 90
+    expect(screen.getByText("720 ₽")).toBeInTheDocument();
+    expect(screen.getByText("900 ₽")).toBeInTheDocument();
     expect(screen.getByText("цена по дисконтной карте", { exact: false })).toBeInTheDocument();
   });
 });
